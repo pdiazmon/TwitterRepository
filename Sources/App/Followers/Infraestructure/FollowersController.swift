@@ -10,6 +10,12 @@ import Vapor
 
 class FollowersController: RouteCollection {
 	
+	private var repository: FollowersRepositoryProtocol
+	
+	init(repository: FollowersRepositoryProtocol) {
+		self.repository = repository
+	}
+	
 	func boot(router: Router) throws {
 		
 		router.group("followers") { (group) in
@@ -20,14 +26,20 @@ class FollowersController: RouteCollection {
 
 extension FollowersController {
 	
+	enum FollwerError: Error {
+		case emptyUser
+	}
+	
 	func getFollowers(_ req: Request) throws -> Future<[Follower]> {
 		
-		let action              = FollowersAction()
-		let followersRepository = FollowersRepository(req)
+		let action = FollowersAction()
+		self.repository.req = req
 		
-		// Decode the input JSON request
-		let followersRequest = try req.query.decode(FollowersRequest.self)
-		
-		return try action.getFollowers(by: followersRequest.screen_name, using: followersRepository)
+		return try req.content.decode(FollowersRequest.self).flatMap { followersRequest in
+			
+			try followersRequest.validate()
+			
+			return try action.getFollowers(by: followersRequest.screen_name, using: self.repository)
+		}
 	}
 }

@@ -14,7 +14,7 @@ struct Criteria: Content, SQLiteModel {
 	
 	var id: Int?
 	
-	var criteria: String?
+	var criteria: String
 	var created: Date?
 	
 	static let createdAtKey: TimestampKey? = \.created
@@ -22,3 +22,16 @@ struct Criteria: Content, SQLiteModel {
 
 //extension Criteria: SQLiteMigration {}
 extension Criteria: Migration {}
+
+extension Criteria: Validatable {
+	
+	static func validations() throws -> Validations<Criteria> {
+
+		var validations = Validations(Criteria.self)
+		
+		validations.add(\.criteria, at: ["criteria"], .count(1...))
+		validations.add(\.id, at: ["id"], .range(1...) || .nil)
+
+        return validations
+    }
+}

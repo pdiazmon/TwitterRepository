@@ -44,5 +44,8 @@ public func configure(
     migrations.add(model: Criteria.self, database: .sqlite)
     services.register(migrations)
 
+//	var middlewares = MiddlewareConfig()
+//	middlewares.use(MyMiddleware.self)
+//	services.register(middlewares)
 	
 }

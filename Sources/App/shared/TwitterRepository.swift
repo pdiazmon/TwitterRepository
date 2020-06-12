@@ -12,7 +12,7 @@ class TwitterRepository {
 
 	typealias TwitterQueries = [String: String]
 	
-	var req: Request
+	var req: Request?
 
 	enum TwitterEndPoint: String, URLRepresentable {
 		func convertToURL() -> URL? {
@@ -22,9 +22,9 @@ class TwitterRepository {
 		case followers = "https://api.twitter.com/1.1/followers/list.json"
 	}
 	
-	init(_ req: Request) {
-		self.req = req
-	}
+//	init(_ req: Request) {
+//		self.req = req
+//	}
 	
 	private lazy var bearer_token: String = {
 		let directory = DirectoryConfig.detect()

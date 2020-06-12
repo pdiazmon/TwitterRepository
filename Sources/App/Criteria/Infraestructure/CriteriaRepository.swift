@@ -9,20 +9,17 @@ import Foundation
 import Vapor
 
 class CriteriaRepository: CriteriaRepositoryProtocol {
-	let req: Request
-	
-	init(_ req: Request) {
-		self.req = req
-	}
+
+	var req: Request?
 	
 	func save(_ criteria: Criteria) -> Future<Criteria> {
 		
-		return criteria.save(on: self.req)
+		return criteria.save(on: req!)
 	}
 	
 	func all() -> Future<[Criteria]> {
 		
-		return Criteria.query(on: req).all()
+		return Criteria.query(on: req!).all()
 	}
 	
 	

@@ -9,7 +9,9 @@ import Foundation
 import Vapor
 
 protocol CriteriaRepositoryProtocol {
-	
+
+	var req: Request? { get set }
+
 	func save(_ criteria: Criteria) -> Future<Criteria>
 	
 	func all() -> Future<[Criteria]>

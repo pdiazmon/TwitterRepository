@@ -18,7 +18,7 @@ extension FollowersRepository: FollowersRepositoryProtocol {
 												"skip_status":           "true",
 												"screen_name":           screen_name]
 		
-		return try self.newRequest(self.req, endpoint: .followers, queries: followersQueries).flatMap(to: [Follower].self) { resp in
+		return try self.newRequest(self.req!, endpoint: .followers, queries: followersQueries).flatMap(to: [Follower].self) { resp in
 
 			// Once the information is received from Twitter, decode and return it
 			return try resp.content.decode(FollowersResponse.self)

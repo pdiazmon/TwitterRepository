@@ -6,8 +6,11 @@ import Vapor
 /// [Learn More →](https://docs.vapor.codes/3.0/getting-started/structure/#routesswift)
 public func routes(_ router: Router) throws {
 	
-	try router.register(collection: CriteriaController())
-	try router.register(collection: FollowersController())
+	let criteriaController  = CriteriaController(repository: CriteriaRepository())
+	let followersController = FollowersController(repository: FollowersRepository())
+	
+	try router.register(collection: criteriaController)
+	try router.register(collection: followersController)
 }
 
 
