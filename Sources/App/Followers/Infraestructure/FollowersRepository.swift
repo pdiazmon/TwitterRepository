@@ -8,8 +8,8 @@
 import Foundation
 import Vapor
 
-class FollowersRepository: TwitterRepository {}
-
+class FollowersRepository: TwitterRepository { }
+ 
 extension FollowersRepository: FollowersRepositoryProtocol {
 	
 	func getFollowers(of screen_name: String) throws -> Future<[Follower]> {
@@ -18,7 +18,7 @@ extension FollowersRepository: FollowersRepositoryProtocol {
 												"skip_status":           "true",
 												"screen_name":           screen_name]
 		
-		return try self.newRequest(self.req!, endpoint: .followers, queries: followersQueries).flatMap(to: [Follower].self) { resp in
+		return try self.newRequest(container, endpoint: .followers, queries: followersQueries).flatMap(to: [Follower].self) { resp in
 
 			// Once the information is received from Twitter, decode and return it
 			return try resp.content.decode(FollowersResponse.self)
@@ -36,5 +36,6 @@ extension FollowersRepository: FollowersRepositoryProtocol {
 						}
 		}
 	}
-
 }
+
+extension FollowersRepository: Service {}

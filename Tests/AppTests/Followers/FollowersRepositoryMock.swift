@@ -11,7 +11,11 @@ import Vapor
 
 public class FollowersRepositoryMock: FollowersRepositoryProtocol {
 	
-	public var req: Request?
+	internal var container: Container
+	
+	init(_ container: Container) {
+		self.container = container
+	}
 	
 	static var followers: [Follower] = {
 		
@@ -25,13 +29,12 @@ public class FollowersRepositoryMock: FollowersRepositoryProtocol {
 	}()
 	
 	public func getFollowers(of screen_name: String) throws -> EventLoopFuture<[Follower]> {
-		let promise = req!.eventLoop.newPromise(of: [Follower].self)
+		let promise = container.eventLoop.newPromise(of: [Follower].self)
 				
 		promise.succeed(result: FollowersRepositoryMock.followers)
 		
 		return promise.futureResult
-
 	}
-	
-	
 }
+
+extension FollowersRepositoryMock: Service {}

@@ -1,6 +1,7 @@
 import Vapor
 import FluentSQLite
 import Fluent
+import Mailgun
 
 /// Called before your application initializes.
 ///
@@ -16,19 +17,6 @@ public func configure(
     services.register(router, as: Router.self)
 
     // Configure DB
-//	let directoryConfig = DirectoryConfig.detect()
-//	services.register(directoryConfig)
-	
-//	try services.register(FluentSQLiteProvider())
-//	var databasesConfig = DatabasesConfig()
-//	let db = try SQLiteDatabase(storage: .memory)
-//	databasesConfig.add(database: db, as: .sqlite)
-//	services.register(databasesConfig)
-//
-//	var migrationConfig = MigrationConfig()
-//	migrationConfig.add(model: Criteria.self, database: .sqlite)
-//	services.register(migrationConfig)
-	
 	try services.register(FluentSQLiteProvider())
 	
     // Configure a SQLite database
@@ -39,13 +27,33 @@ public func configure(
     databases.add(database: sqlite, as: .sqlite)
     services.register(databases)
 
-    // Configure migrations
-    var migrations = MigrationConfig()
-    migrations.add(model: Criteria.self, database: .sqlite)
-    services.register(migrations)
+	// ******************************
+	// Shared services
+	// ******************************
+	services.register(MailRepositoryProtocol.self) { container in
+		return MailRepository(container)
+	}
 
-//	var middlewares = MiddlewareConfig()
-//	middlewares.use(MyMiddleware.self)
-//	services.register(middlewares)
+	services.register(CustomLogger.self) { container -> CustomLogger in
+		return try CustomLogger(console: container.make())
+	}
+	
+	services.register(AppConfigProtocol.self) { _ in
+		return AppConfig()
+	}
+
+	// ******************************
+	// Followers module
+	// ******************************
+	
+	configure_followers(services: &services)
+	
+	// ******************************
+	// Mention module
+	// ******************************
+	
+	configure_mention(services: &services)
 	
 }
+
+

@@ -16,14 +16,27 @@ final class TestFollowers : XCTestCase {
 	var app: Application?
 	
 	override func setUp() {
-	  super.setUp()
-	  
-	  app = try! Application.makeTest(routes: testRoutes)
+		super.setUp()
 
-//		var middlewares = MiddlewareConfig()
-//		middlewares.use(MyMiddleware.self)
-//		app?.services.register(middlewares)
+		app = try! Application.makeTest(
+		configure: { (config, services) in
+			
+			var middlewares = MiddlewareConfig.default()
+			middlewares.use(ExampleMiddleware.self)
+			services.register(middlewares)
 
+			services.register(ExampleMiddleware.self)
+			
+			services.register(FollowersRepositoryProtocol.self) { container in
+				return FollowersRepositoryMock(container)
+			}
+
+		},
+		routes: { (router) in
+			
+			let followerController = FollowersController()
+			try router.register(collection: followerController)
+		})
 	}
 	
 	override func tearDown() {
@@ -31,13 +44,7 @@ final class TestFollowers : XCTestCase {
 	  
 	  app = nil
 	}
-	
-	private func testRoutes(_ router: Router) throws {
-		let followerController = FollowersController(repository: FollowersRepositoryMock())
 		
-		try router.register(collection: followerController)
-	}
-	
 	func testFollowersEndPointOk() throws {
 		
 		let expectation = self.expectation(description: "Followers")
@@ -45,8 +52,7 @@ final class TestFollowers : XCTestCase {
 		
 		var newRequest = HTTPRequest()
 		newRequest.method      = .GET
-		newRequest.url         = URL(string: "/followers")!
-		newRequest.body        = HTTPBody(data: try JSONEncoder().encode(FollowersRequest(screen_name: "TEST")))
+		newRequest.url         = URL(string: "/followers?screen_name=TEST")!
 		newRequest.contentType = MediaType.json
 		
 		try app?.test(newRequest) { (response) in
@@ -90,8 +96,7 @@ final class TestFollowers : XCTestCase {
 		
 		var newRequest = HTTPRequest()
 		newRequest.method      = .GET
-		newRequest.url         = URL(string: "/followers")!
-		newRequest.body        = HTTPBody(data: try JSONEncoder().encode(FollowersRequest(screen_name: "")))
+		newRequest.url         = URL(string: "/followers?screen_name=")!
 		newRequest.contentType = MediaType.json
 		
 		try app?.test(newRequest) { (response) in
@@ -107,10 +112,9 @@ final class TestFollowers : XCTestCase {
 
 	func testFollowersActions() throws {
 		let action = FollowersAction()
-		let repository = FollowersRepositoryMock()
-		repository.req = Request(using: app!)
+		let repository =  try self.app?.make(FollowersRepositoryProtocol.self)
 		
-		let followers = try action.getFollowers(by: "TEST", using: repository).wait()
+		let followers = try action.getFollowers(by: "TEST", using: repository!).wait()
 		
 		XCTAssertEqual(followers.count, FollowersRepositoryMock.followers.count)
 	}

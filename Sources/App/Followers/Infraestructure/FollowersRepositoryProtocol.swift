@@ -10,7 +10,5 @@ import Vapor
 
 protocol FollowersRepositoryProtocol {
 	
-	var req: Request? { get set }
-	
 	func getFollowers(of screen_name: String) throws -> Future<[Follower]>
 }

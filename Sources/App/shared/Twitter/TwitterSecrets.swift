@@ -7,6 +7,10 @@
 
 import Foundation
 
+struct TwitterConfig: Codable {
+	var twitter_config: TwitterSecrets
+}
+
 struct TwitterSecrets: Codable {
 	var bearer_token: String
 }

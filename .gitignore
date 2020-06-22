@@ -70,6 +70,7 @@ fastlane/test_output
 # Secrets
 # -----------
 twitter.json
+mailgun.json
 
 # Vapor
 # ----------
