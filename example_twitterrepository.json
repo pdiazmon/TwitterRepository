@@ -1,0 +1,16 @@
+{
+	"twitter_config": {
+		"bearer_token": "YOUR_BEARER_TOKEN_HERE"
+	},
+	"mail_config": {
+		"to": "someone@somemail.com",
+        	"from": "anotherone@anothermail.com",
+        	"Mailgun_apiKey": "YOUR_MAILGUN_APIKEY_HERE",
+		"Mailgun_eu_domain": "YOUR_MAILGUN_EU_DOMAIN_HERE",
+		"Mailgun_us_domain": "YOUR_MAILGUN_US_DOMAIN_HERE"
+	},
+	"mention_config": {
+		"job_runs_every_seconds": 15
+	}
+}
+
