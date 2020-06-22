@@ -71,6 +71,7 @@ fastlane/test_output
 # -----------
 twitter.json
 mailgun.json
+twitterrepository.json
 
 # Vapor
 # ----------
