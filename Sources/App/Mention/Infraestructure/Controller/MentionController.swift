@@ -30,13 +30,17 @@ extension MentionController {
 	func addNewMentionCriteria(_ req: Request, newMC: MentionCriteria) throws -> Future<MentionCriteria> {
 
 		let action = MentionCriteriaAction()
-		let logger = try req.make(Logger.self)
+		let logger = try req.make(CustomLogger.self)
 		
 		let mentionCriteriaRepository = try req.make(MentionCriteriaRepositoryProtocol.self)
 
 		try newMC.validate()
 
 		return try action.addNewMentionAction(newMC, logger: logger, on: mentionCriteriaRepository)
+		.map { newCriteria in
+			logger.info("New mention criteria added: \(newCriteria.user)")
+			return newCriteria
+		}
 	}
 	
 	func getAllMentionsCriteria(_ container: Container) throws -> Future<[MentionCriteria]> {

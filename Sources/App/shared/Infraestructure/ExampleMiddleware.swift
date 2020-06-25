@@ -13,8 +13,6 @@ public struct ExampleMiddleware: Middleware {
 	
 	public func respond(to request: Request, chainingTo next: Responder) throws -> Future<Response> {
 		
-		print("INSIDE THE MIDDLEWARE !!!")
-		
 		return try next.respond(to: request)
 	}
 }

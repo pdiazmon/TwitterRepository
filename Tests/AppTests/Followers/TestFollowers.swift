@@ -27,9 +27,7 @@ final class TestFollowers : XCTestCase {
 
 			services.register(ExampleMiddleware.self)
 			
-			services.register(FollowersRepositoryProtocol.self) { container in
-				return FollowersRepositoryMock(container)
-			}
+			services.register(FollowersRepositoryMock.self)
 
 		},
 		routes: { (router) in

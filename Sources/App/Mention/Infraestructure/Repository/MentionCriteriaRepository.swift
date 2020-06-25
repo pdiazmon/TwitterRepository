@@ -46,4 +46,14 @@ class MentionCriteriaRepository: MentionCriteriaRepositoryProtocol {
 	}
 }
 
-extension MentionCriteriaRepository: Service {}
+extension MentionCriteriaRepository: ServiceType {
+    /// See `ServiceType`.
+	public static var serviceSupports: [Any.Type] {
+        return [MentionCriteriaRepositoryProtocol.self]
+    }
+
+    /// See `ServiceType`.
+	public static func makeService(for worker: Container) throws -> Self {
+		return MentionCriteriaRepository(worker) as! Self
+    }
+}

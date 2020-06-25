@@ -10,7 +10,8 @@
 		"Mailgun_us_domain": "YOUR_MAILGUN_US_DOMAIN_HERE"
 	},
 	"mention_config": {
-		"job_runs_every_seconds": 15
+		"job_runs_every_seconds": NUMBER_OF_SECONDS,
+		"purge_before_days": NUMBER_OF_DAYS
 	}
 }
 

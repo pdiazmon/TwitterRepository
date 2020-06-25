@@ -37,4 +37,14 @@ extension MentionTweetsRepository: MentionTweetsRepositoryProtocol {
 	}
 }
 
-extension MentionTweetsRepository: Service {}
+extension MentionTweetsRepository: ServiceType {
+    /// See `ServiceType`.
+	public static var serviceSupports: [Any.Type] {
+        return [MentionTweetsRepositoryProtocol.self]
+    }
+
+    /// See `ServiceType`.
+	public static func makeService(for worker: Container) throws -> Self {
+		return MentionTweetsRepository(worker) as! Self
+    }
+}

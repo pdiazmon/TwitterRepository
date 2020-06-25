@@ -16,18 +16,27 @@ func boot_mention(_ app: Application) throws {
 	
 	guard let config = try mention_config(app) else { throw MentionError.ConfigError }
 	
-	let job = try MentionJob(app)
+	let mentionJob = try MentionJob(app)
+	mentionJob.setName("Mention Job")
 	
-	let scheduledJob = ScheduledJob(container: app,
-									every: TimeAmount.seconds(config.mention_config.job_runs_every_seconds),
-									job: job)
-	scheduledJob.start()
+	let scheduledMentionJob = ScheduledJob(container: app,
+										   every: TimeAmount.seconds(config.mention_config.job_runs_every_seconds),
+										   job: mentionJob)
+	scheduledMentionJob.start()
+	
+	let purgeMentionJob = try PurgeMentionJob(app)
+	purgeMentionJob.setName("Purge Mention Job")
+	
+	let scheduledPurgeMentionJob = ScheduledJob(container: app,
+												every: TimeAmount.seconds(config.mention_config.job_runs_every_seconds),
+												job: purgeMentionJob)
+	scheduledPurgeMentionJob.start()
 
 }
 
 fileprivate func mention_config(_ app: Application) throws -> MentionJobConfig? {
 	
-	var config = try app.make(AppConfigProtocol.self)
+	let config = try app.make(AppConfigProtocol.self)
 	
 	return config.readConfig(MentionJobConfig.self)
 		

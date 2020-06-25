@@ -7,6 +7,7 @@
 
 import Foundation
 import Vapor
+import Fluent
 
 class MentionRepository: MentionRepositoryProtocol {
 
@@ -35,6 +36,43 @@ class MentionRepository: MentionRepositoryProtocol {
 			}
 		}
 	}
+	
+	func purgeOlder(than days: Int) throws -> Future<Int> {
+
+		return container.withPooledConnection(to: .sqlite) { conn -> Future<Int> in
+			let compareDate = Calendar.current.date(byAdding: .day, value: -days, to: Date())
+			
+			return Mention.query(on: conn).all()
+			.map { mentions in
+				return mentions.filter { mention in
+					guard let created_at = mention.created_at.toTwitterDate() else { return false }
+					guard let compareDate = compareDate else { return false }
+					
+					return created_at < compareDate
+				}
+			}
+			.map { filteredMentions in
+				
+				let number = filteredMentions.count
+				
+				filteredMentions.forEach { mention in
+					let _ = mention.delete(on: conn)
+				}
+				
+				return number
+			}
+		}
+	}
 }
 
-extension MentionRepository: Service {}
+extension MentionRepository: ServiceType {
+    /// See `ServiceType`.
+	public static var serviceSupports: [Any.Type] {
+        return [MentionRepositoryProtocol.self]
+    }
+
+    /// See `ServiceType`.
+	public static func makeService(for worker: Container) throws -> Self {
+		return MentionRepository(worker) as! Self
+    }
+}

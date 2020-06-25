@@ -4,7 +4,7 @@ import XCTest
 import Vapor
 
 
-final class TestCriteria : XCTestCase {
+final class TestMention : XCTestCase {
 	
 	var app: Application?
 	
@@ -14,16 +14,16 @@ final class TestCriteria : XCTestCase {
 		app = try! Application.makeTest(
 		configure: { (config, services) in
 			
-			services.register(MentionCriteriaRepositoryProtocol.self) { container in
-				return MentionCriteriaRepositoryMock(container)
-			}
+			services.register(MentionCriteriaRepositoryMock.self)
 			
-			services.register(MentionTweetsRepositoryProtocol.self) { container in
-				return MentionTweetsRepositoryMock(container)
-			}
+			services.register(MentionTweetsRepositoryMock.self)
 			
-			services.register(MentionRepositoryProtocol.self) { container in
-				return MentionRepositoryMock(container)
+			services.register(MentionRepositoryMock.self)
+			
+			services.register(AppConfigMock.self)
+
+			services.register(CustomLogger.self) { container -> CustomLogger in
+				return try CustomLogger(console: container.make())
 			}
 
 		},
@@ -60,7 +60,7 @@ final class TestCriteria : XCTestCase {
 		waitForExpectations(timeout: 5, handler: nil)
 	}
 	
-	func testCriteriaEndPointsOk() throws {
+	func testMentionCriteriaEndPointAllOk() throws {
 		
 		let NUMBER_OF_CRITERIAS = 5
 		
@@ -93,7 +93,7 @@ final class TestCriteria : XCTestCase {
 		
 	}
 
-	func testCriteriaEndPointsBadCriteria() throws {
+	func testMentionCriteriaEndPointAddBadCriteria() throws {
 
 		let newExpectation = self.expectation(description: "criteria")
 		let newCriteria4Test = Criteria4Test(id: 1, criteria4Test: "Wrongly named criteria")
@@ -113,7 +113,7 @@ final class TestCriteria : XCTestCase {
 		waitForExpectations(timeout: 5, handler: nil)
 	}
 
-	func testCriteriaEndPointsNoCriteria() throws {
+	func testMentionCriteriaEndPointAddNoCriteria() throws {
 
 		let newExpectation = self.expectation(description: "criteria")
 		
@@ -131,7 +131,7 @@ final class TestCriteria : XCTestCase {
 		waitForExpectations(timeout: 5, handler: nil)
 	}
 
-	func testCriteriaEndPointsEmptyCriteria() throws {
+	func testMentionCriteriaEndPointAddEmptyCriteria() throws {
 		let newExpectation = self.expectation(description: "criteria")
 		let newCriteria = MentionCriteria(id: 1, user: "")
 		
@@ -150,14 +150,19 @@ final class TestCriteria : XCTestCase {
 		waitForExpectations(timeout: 5, handler: nil)
 	}
 
-	func testCriteriaActions() throws {
+	func testMentionCriteriaAllAction() throws {
 		
 		let NUMBER_OF_CRITERIAS = 5
 		
+		XCTAssertNotNil(self.app)
+
 		let action = MentionCriteriaAction()
 		let logger = try app?.make(Logger.self)
 		let repository = try self.app?.make(MentionCriteriaRepositoryProtocol.self)
 		
+		XCTAssertNotNil(repository)
+		XCTAssertNotNil(logger)
+
 		var newCriteria: MentionCriteria
 		
 		for i in 1...NUMBER_OF_CRITERIAS {
@@ -174,12 +179,82 @@ final class TestCriteria : XCTestCase {
 			XCTAssertEqual(allCriterias[i-1].id, i)
 		}
 	}
+	
+	func testMentionAllAction() throws {
+		let NUMBER_OF_MENTIONS = 5
+
+		XCTAssertNotNil(self.app)
+
+		let action = MentionAction()
+		let repository = try self.app?.make(MentionRepositoryProtocol.self)
+		
+		XCTAssertNotNil(repository)
+		
+		var newMention: Mention
+		
+		for i in 1...NUMBER_OF_MENTIONS {
+			newMention = Mention(id: i, tweet_id: "\(i)", created_at: Date().description, text: "Mention \(i)", created: Date())
+			let _ = try action.addNewMention(newMention, on: repository!).wait()
+		}
+		
+		var allMentions = try action.getAllStoredMentions(on: repository!).wait()
+		
+		allMentions = allMentions.sorted { ($0.id ?? 0) < ($1.id ?? 0) }
+		XCTAssertEqual(allMentions.count, NUMBER_OF_MENTIONS)
+		
+		for i in 1...NUMBER_OF_MENTIONS {
+			XCTAssertEqual(allMentions[i-1].id, i)
+		}
+	}
+	
+	func testPurgeMentionsAction() throws {
+		
+		XCTAssertNotNil(self.app)
+
+		let NUMBER_OF_MENTIONS = 5
+		let action = MentionAction()
+		let repository = try self.app?.make(MentionRepositoryProtocol.self)
+		var newMention: Mention
+		let dateFormatter = DateFormatter()
+		let purgeJob = try PurgeMentionJob(self.app!)
+
+		XCTAssertNotNil(repository)
+
+		dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+		dateFormatter.dateFormat = "EEE MMM dd HH:mm:ss Z yyyy"
+		
+		for i in 1...NUMBER_OF_MENTIONS {
+			let created_at = Calendar.current.date(byAdding: .day, value: -(i-1), to: Date())
+			
+			XCTAssertNotNil(created_at)
+			
+			newMention = Mention(id: i,
+								 tweet_id: "\(i)",
+								 created_at: dateFormatter.string(from: created_at!),
+								 text: "Mention \(i)")
+			let _ = try action.addNewMention(newMention, on: repository!).wait()
+		}
+
+		
+		try action.getAllStoredMentions(on: repository!).map { mentions in
+		
+			try purgeJob.run(container: self.app!)
+		
+			try action.getAllStoredMentions(on: repository!).do { remainingMentions in
+		
+				XCTAssertEqual(remainingMentions.count, AppConfigMock.PURGE_BEFORE_DAYS + 1)
+			}
+		}
+		
+	}
 
     static let allTests = [
-        ("testCriteriaEndPointsOk", testCriteriaEndPointsOk),
-		("testCriteriaActions", testCriteriaActions),
-		("testCriteriaEndPointsEmptyCriteria", testCriteriaEndPointsEmptyCriteria),
-		("testCriteriaEndPointsBadCriteria", testCriteriaEndPointsBadCriteria),
-		("testCriteriaEndPointsNoCriteria", testCriteriaEndPointsNoCriteria),
+        ("testMentionCriteriaEndPointAllOk", testMentionCriteriaEndPointAllOk),
+		("testMentionCriteriaEndPointAddBadCriteria", testMentionCriteriaEndPointAddBadCriteria),
+		("testMentionCriteriaEndPointAddNoCriteria", testMentionCriteriaEndPointAddNoCriteria),
+		("testMentionCriteriaEndPointAddEmptyCriteria", testMentionCriteriaEndPointAddEmptyCriteria),
+		("testMentionCriteriaAllAction", testMentionCriteriaAllAction),
+		("testMentionAllAction", testMentionAllAction),
+		("testPurgeMentionsAction", testPurgeMentionsAction)
     ]
 }

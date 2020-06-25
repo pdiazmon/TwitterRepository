@@ -15,4 +15,6 @@ protocol MentionRepositoryProtocol {
 	func save(_ mention: Mention) throws -> Future<Mention>
 	
 	func all() throws -> Future<[Mention]>
+	
+	func purgeOlder(than days: Int) throws -> Future<Int>
 }

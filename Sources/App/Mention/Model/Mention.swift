@@ -17,6 +17,11 @@ struct Mention: Content, SQLiteModel {
 	var tweet_id: String
 	var created_at: String
 	var text: String
+	
+	var created: Date?
+	
+	static let createdAtKey: TimestampKey? = \.created
+	
 }
 
 extension Mention: Migration {

@@ -10,8 +10,6 @@ import Vapor
 
 func configure_followers(services: inout Services) {
 	
-	services.register(FollowersRepositoryProtocol.self) { container in
-		return FollowersRepository(container)
-	}
+	services.register(FollowersRepository.self)
 
 }

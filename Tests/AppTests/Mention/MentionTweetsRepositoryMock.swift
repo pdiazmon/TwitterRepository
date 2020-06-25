@@ -35,4 +35,14 @@ class MentionTweetsRepositoryMock: MentionTweetsRepositoryProtocol {
 	}
 }
 
-extension MentionTweetsRepositoryMock: Service {}
+extension MentionTweetsRepositoryMock: ServiceType {
+    /// See `ServiceType`.
+	public static var serviceSupports: [Any.Type] {
+        return [MentionTweetsRepositoryProtocol.self]
+    }
+
+    /// See `ServiceType`.
+	public static func makeService(for worker: Container) throws -> Self {
+		return MentionTweetsRepositoryMock(worker) as! Self
+    }
+}

@@ -10,9 +10,9 @@ import Mailgun
 
 extension Mailgun.DomainConfig {
     static var euDomain: Mailgun.DomainConfig {
-        return Mailgun.DomainConfig(AppConfig.getMailgunDomain(.eu) ?? "", region: .eu)
+		return Mailgun.DomainConfig(AppConfig().readConfig(MailgunConfig.self)?.mail_config.Mailgun_eu_domain ?? "", region: .eu)
     }
     static var usDomain: Mailgun.DomainConfig {
-        return Mailgun.DomainConfig(AppConfig.getMailgunDomain(.us) ?? "", region: .us)
+        return Mailgun.DomainConfig(AppConfig().readConfig(MailgunConfig.self)?.mail_config.Mailgun_eu_domain ?? "", region: .us)
     }
 }

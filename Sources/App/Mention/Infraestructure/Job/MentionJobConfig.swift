@@ -13,4 +13,5 @@ struct MentionJobConfig: Codable {
 
 struct JobConfig: Codable {
 	var job_runs_every_seconds: Int
+	var purge_before_days: Int
 }

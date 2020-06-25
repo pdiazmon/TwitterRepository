@@ -28,18 +28,16 @@ class AppConfig: AppConfigProtocol {
 			return nil
 		}
 	}
-	
-	static func getMailgunDomain(_ region: Mailgun.Region) -> String? {
-		let appConfig = AppConfig()
-		let mail_config = appConfig.readConfig(MailgunConfig.self)?.mail_config
-		
-		switch region {
-			case .eu:
-				return mail_config?.Mailgun_eu_domain
-			case .us:
-				return mail_config?.Mailgun_us_domain
-		}
-	}
 }
 
-extension AppConfig: Service {}
+extension AppConfig: ServiceType {
+    /// See `ServiceType`.
+	public static var serviceSupports: [Any.Type] {
+        return [AppConfigProtocol.self]
+    }
+
+    /// See `ServiceType`.
+	public static func makeService(for worker: Container) throws -> Self {
+		return AppConfig() as! Self
+    }
+}

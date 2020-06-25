@@ -40,4 +40,14 @@ public class MentionCriteriaRepositoryMock: MentionCriteriaRepositoryProtocol {
 	}
 }
 
-extension MentionCriteriaRepositoryMock: Service {}
+extension MentionCriteriaRepositoryMock: ServiceType {
+    /// See `ServiceType`.
+	public static var serviceSupports: [Any.Type] {
+        return [MentionCriteriaRepositoryProtocol.self]
+    }
+
+    /// See `ServiceType`.
+	public static func makeService(for worker: Container) throws -> Self {
+		return MentionCriteriaRepositoryMock(worker) as! Self
+    }
+}

@@ -22,20 +22,21 @@ extension FollowersRepository: FollowersRepositoryProtocol {
 
 			// Once the information is received from Twitter, decode and return it
 			return try resp.content.decode(FollowersResponse.self)
-						.map(to:[Follower].self) { followers in
+						.map { followers in
 							return followers.users
-						}
-						.do { followers in
-							print("Followers: \(followers.count)")
-							
-							for user in followers.sorted { $0.screen_name < $1.screen_name } {
-								print(" ->\(user.screen_name):")
-								print("       \(user.name)")
-								print("       \(user.description)")
-							}
 						}
 		}
 	}
 }
 
-extension FollowersRepository: Service {}
+extension FollowersRepository: ServiceType {
+    /// See `ServiceType`.
+	public static var serviceSupports: [Any.Type] {
+        return [FollowersRepositoryProtocol.self]
+    }
+
+    /// See `ServiceType`.
+	public static func makeService(for worker: Container) throws -> Self {
+		return FollowersRepository(worker) as! Self
+    }
+}

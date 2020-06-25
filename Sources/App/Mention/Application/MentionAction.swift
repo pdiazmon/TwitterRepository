@@ -18,4 +18,11 @@ class MentionAction {
 		return try repository.all()
 	}
 	
+	func purgeOlder(than days: Int, on repository: MentionRepositoryProtocol, completion: @escaping (Int) throws -> Void) throws {
+		
+		let _ = try repository.purgeOlder(than: days).map { numberOfDeletedRows in
+			try completion(numberOfDeletedRows)
+		}
+	}
+	
 }

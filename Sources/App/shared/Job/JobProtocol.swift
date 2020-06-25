@@ -11,4 +11,8 @@ import Vapor
 protocol JobProtocol {
 	
 	func run(container: Container) throws
+	
+	func setName(_ name: String)
+	
+	func getName() -> String
 }

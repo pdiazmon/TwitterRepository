@@ -22,18 +22,8 @@ func configure_mention(services: inout Services) {
 	services.register(middlewares)
 	services.register(ExampleMiddleware.self)
 
-	
-	services.register(MentionCriteriaRepositoryProtocol.self) { container in
-		return MentionCriteriaRepository(container)
-	}
-	
-	services.register(MentionTweetsRepositoryProtocol.self) { container in
-		return MentionTweetsRepository(container)
-	}
-	
-	services.register(MentionRepositoryProtocol.self) { container in
-		return MentionRepository(container)
-	}
-	
+	services.register(MentionCriteriaRepository.self)
+	services.register(MentionTweetsRepository.self)
+	services.register(MentionRepository.self)
 
 }

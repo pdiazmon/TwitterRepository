@@ -11,30 +11,34 @@ import Mailgun
 
 class MentionJob: JobProtocol {
 	
-	private var logger: Logger?
 	private var tweetsRepository: MentionTweetsRepositoryProtocol
 	private var mentionCriteriaRepository: MentionCriteriaRepositoryProtocol
 	private var mentionRepository: MentionRepositoryProtocol
 	private var mailRepository: MailRepositoryProtocol
 	
+	private var name: String?
+	
 	private var lastMentionTweet: [String: String] = [:]
 
 	init(_ container: Container) throws {
-		
 		self.tweetsRepository          = try container.make(MentionTweetsRepositoryProtocol.self)
 		self.mentionCriteriaRepository = try container.make(MentionCriteriaRepositoryProtocol.self)
 		self.mentionRepository         = try container.make(MentionRepositoryProtocol.self)
 		self.mailRepository            = try container.make(MailRepositoryProtocol.self)
-		self.logger                    = try? container.make(CustomLogger.self)
-
+	}
+	
+	func setName(_ name: String) {
+		self.name = name
+	}
+	
+	func getName() -> String {
+		return self.name ?? ""
 	}
 	
 	func run(container: Container) throws {
 		
 		let criteriaAction = MentionCriteriaAction()
 
-		self.logger?.info("Starting Mention job...")
-		
 		try criteriaAction.getAllStoredMentionCriteriasAction(from: self.mentionCriteriaRepository).map { mentionCriterias in
 
 			let mentionAction = MentionAction()
@@ -55,8 +59,6 @@ class MentionJob: JobProtocol {
 				}
 			}
 		}
-		
-		self.logger?.info("Mention job completed")
 	}
 }
 

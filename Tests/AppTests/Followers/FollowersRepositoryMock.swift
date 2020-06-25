@@ -37,4 +37,14 @@ public class FollowersRepositoryMock: FollowersRepositoryProtocol {
 	}
 }
 
-extension FollowersRepositoryMock: Service {}
+extension FollowersRepositoryMock: ServiceType {
+    /// See `ServiceType`.
+	public static var serviceSupports: [Any.Type] {
+        return [FollowersRepositoryProtocol.self]
+    }
+
+    /// See `ServiceType`.
+	public static func makeService(for worker: Container) throws -> Self {
+		return FollowersRepositoryMock(worker) as! Self
+    }
+}
